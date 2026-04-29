@@ -119,6 +119,22 @@ def helper_detail(id):
 def attendance(year, month):
     helpers = Helper.query.all()
     cal = calendar.monthcalendar(year, month)
+    month_name = calendar.month_name[month]
+
+    # ✅ Handle empty DB safely
+    if not helpers:
+        return render_template(
+            'attendance.html',
+            year=year,
+            month=month,
+            cal=cal,
+            helpers=[],
+            attendances={},
+            month_name=month_name,
+            cutoff_year=ATTENDANCE_CUTOFF_DATE.year,
+            cutoff_month=ATTENDANCE_CUTOFF_DATE.month,
+            cutoff_day=ATTENDANCE_CUTOFF_DATE.day,
+        )
 
     attendances = {}
     for helper in helpers:
