@@ -24,20 +24,6 @@ else:
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'househelp.db')
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db.init_app(app)
-
-ATTENDANCE_CUTOFF_DATE = date(2026, 4, 27)
-
-
-def is_shift_helper(helper_type):
-    return helper_type and helper_type.strip().lower() in ['cook', 'domestic helper']
-
-
-def is_milk_vendor(helper_type):
-    return helper_type and helper_type.strip().lower() == 'milk vendor'
-
-
 def ensure_database_schema():
     with db.engine.connect() as conn:
         if conn.dialect.name == 'sqlite':
@@ -55,18 +41,22 @@ def ensure_database_schema():
             except Exception:
                 pass  # safe fallback
 
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
-# ✅ FIX: Ensure DB is created ONCE in production
-_db_initialized = False
+with app.app_context():
+    db.create_all()
+    ensure_database_schema()
 
-@app.before_request
-def setup():
-    global _db_initialized
-    if not _db_initialized:
-        db.create_all()
-        ensure_database_schema()
-        _db_initialized = True
+ATTENDANCE_CUTOFF_DATE = date(2026, 4, 27)
 
+
+def is_shift_helper(helper_type):
+    return helper_type and helper_type.strip().lower() in ['cook', 'domestic helper']
+
+
+def is_milk_vendor(helper_type):
+    return helper_type and helper_type.strip().lower() == 'milk vendor'
 
 @app.route('/')
 def index():
@@ -152,22 +142,29 @@ def attendance(year, month):
     attendances = {}
     for helper in helpers:
         attendances[helper.id] = {}
-        for att in helper.attendances:
+        att_records = Attendance.query.filter_by(helper_id=helper.id).all()
+
+        for att in att_records:
             if att.date.year == year and att.date.month == month:
                 key = f"{att.date.year}-{att.date.month:02d}-{att.date.day:02d}"
                 attendances[helper.id][key] = {
                     'present': att.present,
-                    'shift': att.shift,
-                    'qty': att.qty,
+                    'shift': getattr(att, 'shift', None),
+                    'qty': getattr(att, 'qty', None),
                 }
 
-    return render_template('attendance.html',
-                           year=year,
-                           month=month,
-                           cal=cal,
-                           helpers=helpers,
-                           attendances=attendances,
-                           month_name=calendar.month_name[month])
+    return render_template(
+            'attendance.html',
+            year=year,
+            month=month,
+            cal=cal,
+            helpers=helpers,
+            attendances=attendances,
+            month_name=month_name,
+            cutoff_year=ATTENDANCE_CUTOFF_DATE.year,
+            cutoff_month=ATTENDANCE_CUTOFF_DATE.month,
+            cutoff_day=ATTENDANCE_CUTOFF_DATE.day,
+        )
 
 
 @app.route('/mark_attendance/<int:year>/<int:month>/<int:day>/<int:helper_id>', methods=['POST'])
