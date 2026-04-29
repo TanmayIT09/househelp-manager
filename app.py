@@ -10,8 +10,21 @@ app.config['SECRET_KEY'] = 'your-secret-key'
 
 # ✅ FIX: Proper SQLite path for Render
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'househelp.db')
 
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'househelp.db')
+import os
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    # ✅ Render/Postgres case
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    # ✅ Local SQLite fallback
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'househelp.db')
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 ATTENDANCE_CUTOFF_DATE = date(2026, 4, 27)
