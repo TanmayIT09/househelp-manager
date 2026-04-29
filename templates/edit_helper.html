@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Edit Helper</h2>
+<form method="post">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" value="{{ helper.name }}" required><br>
+    <label for="type">Type:</label>
+    <select id="type" name="type" required onchange="toggleCustomType()">
+        <option value="cook" {% if helper.type.lower() == 'cook' %}selected{% endif %}>Cook</option>
+        <option value="domestic helper" {% if helper.type.lower() == 'domestic helper' %}selected{% endif %}>Domestic Helper</option>
+        <option value="milk vendor" {% if helper.type.lower() == 'milk vendor' %}selected{% endif %}>Milk Vendor</option>
+        <option value="other" {% if helper.type.lower() not in ['cook', 'domestic helper', 'milk vendor'] %}selected{% endif %}>Other</option>
+    </select><br>
+    <div id="customTypeDiv" style="display: {% if helper.type.lower() not in ['cook', 'domestic helper', 'milk vendor'] %}block{% else %}none{% endif %};">
+        <label for="customType">Custom Type:</label>
+        <input type="text" id="customType" name="customType" value="{% if helper.type.lower() not in ['cook', 'domestic helper', 'milk vendor'] %}{{ helper.type }}{% endif %}" placeholder="e.g., Caretaker, Nurse, Doctor"><br>
+    </div>
+    <div id="defaultQtyDiv" style="display: {% if helper.type.lower() == 'milk vendor' %}block{% else %}none{% endif %};">
+        <label for="default_qty">Default litres per day:</label>
+        <input type="number" step="0.1" min="0" id="default_qty" name="default_qty" value="{% if helper.type.lower() == 'milk vendor' %}{{ helper.default_qty if helper.default_qty is not none else 1.0 }}{% else %}1.0{% endif %}"><br>
+    </div>
+    <button type="submit">Update</button>
+    <a href="{{ url_for('index') }}" style="margin-left: 10px;">Cancel</a>
+</form>
+
+<script>
+function toggleCustomType() {
+    const typeSelect = document.getElementById('type');
+    const customTypeDiv = document.getElementById('customTypeDiv');
+    const customTypeInput = document.getElementById('customType');
+    const defaultQtyDiv = document.getElementById('defaultQtyDiv');
+    const defaultQtyInput = document.getElementById('default_qty');
+
+    if (typeSelect.value === 'other') {
+        customTypeDiv.style.display = 'block';
+        customTypeInput.required = true;
+    } else {
+        customTypeDiv.style.display = 'none';
+        customTypeInput.required = false;
+        customTypeInput.value = '';
+    }
+
+    if (typeSelect.value === 'milk vendor') {
+        defaultQtyDiv.style.display = 'block';
+        defaultQtyInput.required = true;
+    } else {
+        defaultQtyDiv.style.display = 'none';
+        defaultQtyInput.required = false;
+        defaultQtyInput.value = '1.0';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleCustomType();
+});
+</script>
+{% endblock %}

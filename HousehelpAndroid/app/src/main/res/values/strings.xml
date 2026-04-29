@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Househelp</string>
+    <string name="app_description">Use this app to track attendance and payments for family house helpers.</string>
+    <string name="local_server_ip">192.168.0.100</string>
+</resources>

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ helper.name }} - {{ helper.type | title }}</h2>
+
+<h3>Recent Attendance</h3>
+{% if helper.type.lower() == 'milk vendor' %}
+<p>Default litres per day: {{ helper.default_qty if helper.default_qty is not none else 1.0 }}L</p>
+{% endif %}
+{% if recent_attendances %}
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Status</th>
+    </tr>
+    {% for att in recent_attendances %}
+    <tr>
+        <td>{{ att.date.strftime('%Y-%m-%d') }}</td>
+        <td {% if not att.present %}style="color: red; font-weight: bold;"{% endif %}>
+            {{ 'Present' if att.present else 'Absent' }}
+            {% if att.shift %} - {{ att.shift }}{% endif %}
+            {% if att.qty is not none %} - {{ '%.1f'|format(att.qty) }}L{% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No attendance records yet.</p>
+{% endif %}
+
+<h3>Recent Payments</h3>
+{% if recent_payments %}
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Amount</th>
+    </tr>
+    {% for pay in recent_payments %}
+    <tr>
+        <td>{{ pay.date.strftime('%Y-%m-%d') }}</td>
+        <td>₹{{ pay.amount }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No payment records yet.</p>
+{% endif %}
+
+<a href="{{ url_for('index') }}">Back to Home</a>
+{% endblock %}
