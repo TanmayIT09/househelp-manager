@@ -5,6 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>House Help Manager</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style id="global-style">
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f5f7fa;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px;
+            text-align: center;
+        }
+
+        nav {
+            margin-top: 10px;
+        }
+
+        nav a {
+            color: white;
+            margin: 0 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            padding: 10px;
+        }
+
+        .calendar {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 12px;
+        }
+
+        .calendar th, .calendar td {
+            border: 1px solid #ddd;
+            vertical-align: top;
+            padding: 5px;
+            min-width: 120px;
+        }
+
+        .calendar th {
+            background: #ecf0f1;
+        }
+
+        .calendar td {
+            background: white;
+        }
+
+        form {
+            margin: 0;
+        }
+
+        button {
+            border: none;
+            padding: 3px 6px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .calendar {
+                font-size: 10px;
+            }
+
+            .calendar td {
+                min-width: 90px;
+            }
+
+            nav a {
+                display: inline-block;
+                margin: 5px;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
 </head>
 <body>
     <header>

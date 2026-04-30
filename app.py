@@ -213,7 +213,7 @@ def mark_attendance(year, month, day, helper_id):
     attendance.qty = qty
 
     db.session.commit()
-    return redirect(url_for('attendance', year=year, month=month))
+    return redirect(url_for('attendance', year=year, month=month) + f"#day-{day}")
 
 
 @app.route('/payments/<int:year>/<int:month>')
@@ -222,21 +222,32 @@ def payments(year, month):
     cal = calendar.monthcalendar(year, month)
 
     payments_dict = {}
+
     for helper in helpers:
-        payments_dict[helper.id] = {
-            f"{pay.date.year}-{pay.date.month:02d}-{pay.date.day:02d}": pay.amount
-            for pay in helper.payments
-            if pay.date.year == year and pay.date.month == month
-        }
+        # ✅ ALWAYS initialize inner dict first
+        payments_dict[helper.id] = {}
 
-    return render_template('payments.html',
-                           year=year,
-                           month=month,
-                           cal=cal,
-                           helpers=helpers,
-                           payments=payments_dict,
-                           month_name=calendar.month_name[month])
+        # ✅ Fetch payments safely
+        pay_records = Payment.query.filter_by(helper_id=helper.id).all()
 
+        for pay in pay_records:
+            if pay.date.year == year and pay.date.month == month:
+                key = f"{pay.date.year}-{pay.date.month:02d}-{pay.date.day:02d}"
+
+                payments_dict[helper.id][key] = {
+                    "amount": pay.amount,
+                    "id": pay.id
+                }
+
+    return render_template(
+        'payments.html',
+        year=year,
+        month=month,
+        cal=cal,
+        helpers=helpers,
+        payments=payments_dict,
+        month_name=calendar.month_name[month]
+    )
 
 @app.route('/add_payment/<int:year>/<int:month>/<int:day>/<int:helper_id>', methods=['GET', 'POST'])
 def add_payment(year, month, day, helper_id):
@@ -251,6 +262,30 @@ def add_payment(year, month, day, helper_id):
 
     helper = Helper.query.get(helper_id)
     return render_template('add_payment.html', year=year, month=month, day=day, helper=helper)
+
+@app.route('/edit_payment/<int:id>', methods=['GET', 'POST'])
+def edit_payment(id):
+    payment = Payment.query.get_or_404(id)
+
+    if request.method == 'POST':
+        payment.amount = float(request.form['amount'])
+        db.session.commit()
+        return redirect(url_for('payments', year=payment.date.year, month=payment.date.month))
+
+    return render_template('edit_payment.html', payment=payment)
+
+
+@app.route('/delete_payment/<int:id>', methods=['POST'])
+def delete_payment(id):
+    payment = Payment.query.get_or_404(id)
+    year = payment.date.year
+    month = payment.date.month
+
+    db.session.delete(payment)
+    db.session.commit()
+
+    return redirect(url_for('payments', year=year, month=month))
+
 
 
 # Local run only
