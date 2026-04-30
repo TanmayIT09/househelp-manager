@@ -153,6 +153,7 @@ def attendance(year, month):
                     'qty': getattr(att, 'qty', None),
                 }
 
+    today = date.today()
     return render_template(
             'attendance.html',
             year=year,
@@ -164,6 +165,9 @@ def attendance(year, month):
             cutoff_year=ATTENDANCE_CUTOFF_DATE.year,
             cutoff_month=ATTENDANCE_CUTOFF_DATE.month,
             cutoff_day=ATTENDANCE_CUTOFF_DATE.day,
+            today_year=today.year,
+            today_month=today.month,
+            today_day=today.day,
         )
 
 
@@ -175,6 +179,10 @@ def mark_attendance(year, month, day, helper_id):
         return redirect(url_for('attendance', year=year, month=month))
 
     helper = Helper.query.get_or_404(helper_id)
+
+    if date_obj > date.today():
+        return redirect(url_for('attendance', year=year, month=month))
+
     attendance = Attendance.query.filter_by(helper_id=helper_id, date=date_obj).first()
 
     if not attendance:
@@ -186,11 +194,19 @@ def mark_attendance(year, month, day, helper_id):
     qty = None
 
     if is_milk_vendor(helper.type):
-        try:
-            qty = float(request.form.get('qty', ''))
-            present = qty > 0
-        except:
-            qty = None
+        qty_value = request.form.get('qty', '').strip()
+        if qty_value:
+            try:
+                qty = float(qty_value)
+            except ValueError:
+                qty = None
+
+        if not present:
+            qty = 0.0
+        elif qty is None:
+            qty = helper.default_qty if helper.default_qty is not None else 1.0
+
+        present = qty > 0
 
     attendance.present = present
     attendance.shift = shift
