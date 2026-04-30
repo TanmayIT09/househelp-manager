@@ -3,7 +3,7 @@
 {% block content %}
 <h2>Attendance for {{ month_name }} {{ year }}</h2>
 <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-    Check the box to mark Present (green), uncheck to mark Absent (red). For milk vendors, enter litres per day.
+    ✅ = Present | ❌ = Absent | Click <strong>Save</strong> to update. For milk vendors, enter litres per day.
 </p>
 
 {% if helpers|length == 0 %}
@@ -39,43 +39,39 @@
         <td></td>
         {% else %}
         <td>
-            <div>{{ day }}</div>
+            <div><strong>{{ day }}</strong></div>
             {% for helper in helpers %}
             {% set day_key = "%04d-%02d-%02d"|format(year, month, day) %}
             {% set att = attendances.get(helper.id, {}).get(day_key, {}) %}
             {% set is_present = att.get('present', False) %}
-            <div style="margin: 4px 0; padding: 4px 0; border-bottom: 1px solid #eee;">
+            <div style="margin: 6px 0; padding: 6px; border: 1px solid #ddd; border-radius: 4px; background: #f9f9f9;">
                 <form method="post" action="{{ url_for('mark_attendance', year=year, month=month, day=day, helper_id=helper.id) }}" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
-                    <strong style="min-width: 70px;">{{ (helper.name or '')[:6] }}:</strong>
+                    <strong style="min-width: 65px; font-size: 13px;">{{ (helper.name or '')[:8] }}</strong>
+                    
                     {% if (helper.type or '').lower() in ['cook', 'domestic helper'] %}
-                    <label>
-                        <select name="shift" onchange="this.form.submit()" style="min-width: 110px;">
-                            <option value="" {% if not att.get('shift') %}selected{% endif %}>No shift</option>
-                            <option value="Shift 1" {% if att.get('shift') == 'Shift 1' %}selected{% endif %}>Shift 1</option>
-                            <option value="Shift 2" {% if att.get('shift') == 'Shift 2' %}selected{% endif %}>Shift 2</option>
-                            <option value="Full Day" {% if att.get('shift') == 'Full Day' %}selected{% endif %}>Full Day</option>
-                        </select>
-                    </label>
+                    <select name="shift" style="min-width: 90px; padding: 4px; font-size: 12px;">
+                        <option value="">No shift</option>
+                        <option value="Shift 1" {% if att.get('shift') == 'Shift 1' %}selected{% endif %}>Shift 1</option>
+                        <option value="Shift 2" {% if att.get('shift') == 'Shift 2' %}selected{% endif %}>Shift 2</option>
+                        <option value="Full Day" {% if att.get('shift') == 'Full Day' %}selected{% endif %}>Full Day</option>
+                    </select>
                     {% elif (helper.type or '').lower() == 'milk vendor' %}
-                    <label>
-                        <input type="number" step="0.1" min="0" name="qty" value="{{ att.get('qty') if att.get('qty') is not none else (helper.default_qty if helper.default_qty is not none else 1.0) }}" style="width: 80px;" onchange="this.form.submit()">
-                        L
-                    </label>
+                    <input type="number" step="0.1" min="0" name="qty" value="{{ att.get('qty') if att.get('qty') is not none else (helper.default_qty if helper.default_qty is not none else 1.0) }}" style="width: 70px; padding: 4px; font-size: 12px;" placeholder="Litres">
                     {% endif %}
+                    
+                    <div style="display: inline-flex; gap: 8px; align-items: center;">
+                        <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="radio" name="status_{{ helper.id }}_{{ day }}" value="1" {% if is_present %}checked{% endif %} onchange="document.getElementById('present_{{ helper.id }}_{{ day }}').value='1'"> 
+                            <span style="font-size: 16px;">✅</span>
+                        </label>
+                        <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="radio" name="status_{{ helper.id }}_{{ day }}" value="0" {% if not is_present %}checked{% endif %} onchange="document.getElementById('present_{{ helper.id }}_{{ day }}').value='0'">
+                            <span style="font-size: 16px;">❌</span>
+                        </label>
+                    </div>
+                    
                     <input type="hidden" id="present_{{ helper.id }}_{{ day }}" name="present" value="{{ 1 if is_present else 0 }}">
-                    <label style="display: inline-flex; align-items: center; gap: 4px;">
-                        <input type="checkbox" class="present-checkbox" data-target="present_{{ helper.id }}_{{ day }}" {% if is_present %}checked{% endif %} onchange="syncAttendance(this, true)">
-                        Present
-                    </label>
-                    <label style="display: inline-flex; align-items: center; gap: 4px;">
-                        <input type="checkbox" class="absent-checkbox" data-target="present_{{ helper.id }}_{{ day }}" {% if not is_present %}checked{% endif %} onchange="syncAttendance(this, false)">
-                        Absent
-                    </label>
-                    <span style="color: {% if is_present %}green{% else %}red{% endif %}; font-weight: bold;">
-                        {{ 'Present' if is_present else 'Absent' }}
-                        {% if att.get('shift') %} - {{ att.get('shift') }}{% endif %}
-                        {% if att.get('qty') is not none %} - {{ '%.1f'|format(att.get('qty')) }}L{% endif %}
-                    </span>
+                    <button type="submit" style="padding: 4px 10px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">Save</button>
                 </form>
             </div>
             {% endfor %}

@@ -63,6 +63,8 @@ db.sqlite3-journal
 
 # Flask stuff:
 instance/
+househelp.db
+instance/househelp.db
 .webassets-cache
 
 # Scrapy stuff:
@@ -216,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# db file
+househelp.db

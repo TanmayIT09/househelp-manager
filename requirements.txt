@@ -4,3 +4,4 @@ Flask-WTF==1.1.1
 gunicorn
 sqlalchemy
 psycopg2-binary
+pandas
