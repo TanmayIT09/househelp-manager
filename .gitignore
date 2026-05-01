@@ -221,3 +221,7 @@ __marimo__/
 
 # db file
 househelp.db
+
+# Android/Gradle local state
+HousehelpAndroid/.gradle/
+HousehelpAndroid/app/build/

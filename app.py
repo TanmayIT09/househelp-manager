@@ -3,9 +3,12 @@ from sqlalchemy import text
 from models import db, Helper, Attendance, Payment
 from datetime import datetime, date
 from functools import wraps
+from dotenv import load_dotenv
 import hmac
 import calendar
 import os
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'local-dev-secret-key')
@@ -52,6 +55,15 @@ with app.app_context():
     ensure_database_schema()
 
 ATTENDANCE_CUTOFF_DATE = date(2026, 4, 27)
+
+
+@app.context_processor
+def inject_current_month():
+    today = date.today()
+    return {
+        'current_year': today.year,
+        'current_month': today.month,
+    }
 
 
 def login_required(view_func):
