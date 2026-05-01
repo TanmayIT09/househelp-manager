@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - House Help Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            align-items: center;
+            background: #f5f7fa;
+            display: flex;
+            font-family: Arial, sans-serif;
+            justify-content: center;
+            margin: 0;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .login-panel {
+            background: #fff;
+            border: 1px solid #dfe5ec;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(44, 62, 80, 0.08);
+            max-width: 380px;
+            padding: 24px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin: 0 0 18px;
+        }
+
+        label {
+            color: #34495e;
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input {
+            border: 1px solid #cfd8e3;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            padding: 12px;
+            width: 100%;
+        }
+
+        button {
+            background: #2c3e50;
+            border: 0;
+            border-radius: 6px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 16px;
+            padding: 12px;
+            width: 100%;
+        }
+
+        .error {
+            background: #fdecea;
+            border: 1px solid #f5c2c0;
+            border-radius: 6px;
+            color: #9f2a24;
+            margin-bottom: 14px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <form class="login-panel" method="post">
+        <h1>House Help Manager</h1>
+
+        {% if not password_configured %}
+            <div class="error">FAMILY_PASSWORD is not configured on the server.</div>
+        {% elif error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <label for="password">Family password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>

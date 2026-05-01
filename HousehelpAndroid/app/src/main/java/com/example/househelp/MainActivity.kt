@@ -1,6 +1,5 @@
 package com.example.househelp
 
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.webkit.WebResourceRequest
@@ -11,28 +10,10 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
-    private val localServerIp by lazy { getString(R.string.local_server_ip) }
     private val backendUrls by lazy {
-        listOf(
-            if (isEmulator()) "http://10.0.2.2:5000" else "http://127.0.0.1:5000",
-            "http://10.0.2.2:5000",
-            "http://127.0.0.1:5000",
-            "http://$localServerIp:5000"
-        ).distinct()
+        listOf(getString(R.string.backend_url))
     }
     private var currentUrlIndex = 0
-
-    private fun isEmulator(): Boolean {
-        return Build.FINGERPRINT.startsWith("generic") ||
-            Build.FINGERPRINT.startsWith("unknown") ||
-            Build.MODEL.contains("google_sdk") ||
-            Build.MODEL.contains("Emulator") ||
-            Build.MODEL.contains("Android SDK built for x86") ||
-            Build.MANUFACTURER.contains("Genymotion") ||
-            Build.HARDWARE.contains("goldfish") ||
-            Build.HARDWARE.contains("ranchu") ||
-            Build.HARDWARE.contains("qemu")
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +61,7 @@ class MainActivity : AppCompatActivity() {
 
                 loadingBar.visibility = View.GONE
                 errorText.visibility = View.VISIBLE
-                errorText.text = "Error loading page. Try adb reverse tcp:5000 tcp:5000 or set your PC IP in strings.xml."
+                errorText.text = "Error loading page. Check your internet connection and try again."
                 android.util.Log.e("HouseHelp", "Error: ${error?.description}")
             }
         }
